@@ -164,13 +164,7 @@ public sealed class Sketch
     /// <summary>Turns a context diagram element into an adapter on a port.</summary>
     public Adapter Place(string elementId, string portId, int? index = null)
     {
-        var element = ContextDiagram.Find(elementId)
-            ?? throw new SketchRuleException($"There is no context diagram element '{elementId}'.");
-        if (element.Type == ElementType.System)
-            throw new SketchRuleException("The system is the hexagon; it cannot become an adapter.");
-        if (Adapters.Any(a => a.SourceElementId == elementId))
-            throw new SketchRuleException($"'{element.Name}' is already on the diagram.");
-
+        var element = Placeable(elementId);
         var port = FindPort(portId);
         var adapter = AdapterFrom(element);
         port.Insert(adapter, index ?? port.Adapters.Count);
@@ -178,12 +172,24 @@ public sealed class Sketch
     }
 
     /// <summary>Adds an adapter that does not come from the context diagram, such as a fake.</summary>
-    public Adapter AddAdapter(string portId)
+    public Adapter AddAdapter(string portId, AdapterKind kind = AdapterKind.Real)
     {
         var port = FindPort(portId);
-        var adapter = new Adapter(NewId(), NextName("Adapter", Adapters.Select(a => a.Name)), AdapterKind.Real, null);
+        var name = kind == AdapterKind.Real
+            ? NextName("Adapter", Adapters.Select(a => a.Name))
+            : UniqueName(kind.ToString(), port.Adapters.Select(a => a.Name));
+        var adapter = new Adapter(NewId(), name, kind, null);
         port.Insert(adapter, port.Adapters.Count);
         return adapter;
+    }
+
+    /// <summary>Makes a new port named after a context diagram element, and places the element on it.</summary>
+    public Adapter PlaceOnNewPort(string elementId, Side side)
+    {
+        var element = Placeable(elementId);
+        var port = new Port(NewId(), UniqueName(element.Name, ports.Select(p => p.Name)), side, isUser: false);
+        ports.Add(port);
+        return Place(elementId, port.Id);
     }
 
     /// <summary>Moves an adapter to a port (its own or another) at the given position.</summary>
@@ -233,6 +239,28 @@ public sealed class Sketch
         string id;
         do id = random.Next().ToString("x8"); while (used.Contains(id));
         return id;
+    }
+
+    /// <summary>The element, if it can become an adapter: it exists, isn't the system, and isn't placed yet.</summary>
+    private ContextElement Placeable(string elementId)
+    {
+        var element = ContextDiagram.Find(elementId)
+            ?? throw new SketchRuleException($"There is no context diagram element '{elementId}'.");
+        if (element.Type == ElementType.System)
+            throw new SketchRuleException("The system is the hexagon; it cannot become an adapter.");
+        if (Adapters.Any(a => a.SourceElementId == elementId))
+            throw new SketchRuleException($"'{element.Name}' is already on the diagram.");
+        return element;
+    }
+
+    /// <summary>The name itself if it's free, otherwise "name 2", "name 3" and so on.</summary>
+    private static string UniqueName(string name, IEnumerable<string> taken)
+    {
+        var names = taken.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (!names.Contains(name)) return name;
+        var n = 2;
+        while (names.Contains($"{name} {n}")) n++;
+        return $"{name} {n}";
     }
 
     private static string NextName(string stem, IEnumerable<string> taken)

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using HexaSketch.Application;
+using HexaSketch.Domain;
 
 namespace HexaSketch.Wpf;
 
@@ -76,7 +77,10 @@ public partial class MainWindow : Window
         var menu = new ContextMenu();
         if (viewModel.SelectedPort is { } port)
         {
-            menu.Items.Add(Item("Add adapter", () => viewModel.AddAdapterTo(port.Id)));
+            menu.Items.Add(Item("Add real adapter", () => viewModel.AddAdapterTo(port.Id, AdapterKind.Real)));
+            menu.Items.Add(Item("Add fake adapter", () => viewModel.AddAdapterTo(port.Id, AdapterKind.Fake)));
+            menu.Items.Add(Item("Add simulated adapter", () => viewModel.AddAdapterTo(port.Id, AdapterKind.Simulated)));
+            menu.Items.Add(new Separator());
             menu.Items.Add(Item("Rename", viewModel.RequestRename));
             if (!port.IsUser) menu.Items.Add(Item("Delete port", () => viewModel.DeleteCommand.Execute(null)));
         }

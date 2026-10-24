@@ -18,12 +18,15 @@ public static class DragFormats
 
 /// <summary>
 /// Draws the laid-out diagram and turns mouse work into view model calls: click to select,
-/// double-click to rename, drag adapters and ports about, drop list items on ports, drag the
-/// background to pan and use the wheel to zoom.
+/// double-click to rename, drag adapters and ports about, drop list items on ports (or on the
+/// hexagon, to make a new port), drag the background to pan and use the wheel to zoom.
 /// </summary>
 public sealed class DiagramSurface : Border
 {
     private sealed record Hit(string Kind, string Id, string PortId, int Index);
+
+    private const string HexagonKind = "Hexagon";
+    private static readonly Hit HexagonHit = new(HexagonKind, HexagonKind, "", -1);
 
     private static readonly Brush Ink = Brush(SvgDiagram.Ink);
     private static readonly Brush HexagonFill = Brush(SvgDiagram.HexagonFill);
@@ -44,6 +47,7 @@ public sealed class DiagramSurface : Border
     private Point? panFrom;
     private (Hit Hit, Point At)? pressed;
     private Shape? hovered;
+    private TextBlock? dropHint;
     private bool autoFit = true;
 
     public DiagramSurface()
@@ -61,10 +65,11 @@ public sealed class DiagramSurface : Border
         MouseLeftButtonDown += OnMouseDown;
         MouseMove += OnMouseMove;
         MouseLeftButtonUp += (_, _) => { panFrom = null; pressed = null; ReleaseMouseCapture(); };
-        MouseRightButtonDown += (_, e) => ViewModel?.Select(HitAt(e.GetPosition(this))?.Id);
+        MouseRightButtonDown += (_, e) =>
+            ViewModel?.Select(HitAt(e.GetPosition(this)) is { Kind: not HexagonKind } hit ? hit.Id : null);
         MouseWheel += OnWheel;
         DragOver += OnDragOver;
-        DragLeave += (_, _) => Hover(null);
+        DragLeave += (_, _) => { Hover(null); ShowDropHint(null); };
         Drop += OnDrop;
     }
 
@@ -116,7 +121,16 @@ public sealed class DiagramSurface : Border
 
     private void DrawHexagon(HexagonShape h)
     {
-        Add(Polygon(h.Corners, HexagonFill, Ink, 1.5));
+        // An invisible wide outline makes the edge easy to drop on; the hexagon itself takes drops too.
+        var edge = Polygon(h.Corners, Brushes.Transparent, Brushes.Transparent, 36);
+        edge.IsHitTestVisible = true;
+        edge.Tag = HexagonHit;
+        Add(edge);
+        var hexagon = Polygon(h.Corners, HexagonFill, Ink, 1.5);
+        hexagon.IsHitTestVisible = true;
+        hexagon.Tag = HexagonHit;
+        Add(hexagon);
+        dropTargets[HexagonKind] = hexagon;
         Add(Polygon(h.TasksRegion, UserFill, UserInk, 1));
         Add(Polygon(h.QueriesRegion, UserFill, UserInk, 1));
         Add(Line(h.TasksQueriesDivider, UserInk, 1, dashed: true));
@@ -190,7 +204,7 @@ public sealed class DiagramSurface : Border
     {
         Focus();
         if (ViewModel is not { } vm) return;
-        if (HitAt(e.GetPosition(this)) is { } hit)
+        if (HitAt(e.GetPosition(this)) is { Kind: not HexagonKind } hit)
         {
             vm.Select(hit.Id);
             if (e.ClickCount == 2) vm.RequestRename();
@@ -244,17 +258,21 @@ public sealed class DiagramSurface : Border
         var target = Accepts(e.Data, HitAt(e.GetPosition(this)));
         e.Effects = target is null ? DragDropEffects.None : DragDropEffects.Move;
         Hover(target is null ? null : dropTargets.GetValueOrDefault(target.Id));
+        ShowDropHint(target?.Kind == HexagonKind ? e.GetPosition(content) : null);
         e.Handled = true;
     }
 
     private void OnDrop(object sender, DragEventArgs e)
     {
         Hover(null);
+        ShowDropHint(null);
         if (ViewModel is not { } vm || Accepts(e.Data, HitAt(e.GetPosition(this))) is not { } target) return;
         int? index = target.Index >= 0 ? target.Index : null;
 
-        if (e.Data.GetData(DragFormats.Item) is string elementId)
-            vm.PlaceItem(elementId, target.PortId, index);
+        if (e.Data.GetData(DragFormats.Item) is string elementId && target.Kind == HexagonKind)
+            vm.PlaceOnNewPort(elementId, SideAt(e.GetPosition(content)));
+        else if (e.Data.GetData(DragFormats.Item) is string itemId)
+            vm.PlaceItem(itemId, target.PortId, index);
         else if (e.Data.GetData(DragFormats.Adapter) is string adapterId)
             vm.MoveAdapter(adapterId, target.PortId, index);
         else if (e.Data.GetData(DragFormats.Port) is string portId)
@@ -262,11 +280,40 @@ public sealed class DiagramSurface : Border
         e.Handled = true;
     }
 
-    /// <summary>Items and adapters drop on ports or adapters (to go at that position); ports drop on ports.</summary>
+    /// <summary>The left half of the hexagon is driving, the right half driven.</summary>
+    private static Side SideAt(Point inDiagram) => inDiagram.X < 0 ? Side.Driving : Side.Driven;
+
+    /// <summary>While an item is over the hexagon, says what dropping it there will make.</summary>
+    private void ShowDropHint(Point? at)
+    {
+        if (at is not { } point)
+        {
+            if (dropHint is not null) content.Children.Remove(dropHint);
+            dropHint = null;
+            return;
+        }
+        if (dropHint is null)
+        {
+            dropHint = Text("", 13, Highlight, bold: true);
+            content.Children.Add(dropHint);
+        }
+        // Above the cursor, reaching in towards the hexagon so it never runs off the canvas edge.
+        var driving = SideAt(point) == Side.Driving;
+        dropHint.Text = driving ? "+ new driving port" : "+ new driven port";
+        dropHint.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        Canvas.SetLeft(dropHint, driving ? point.X + 4 : point.X - 4 - dropHint.DesiredSize.Width);
+        Canvas.SetTop(dropHint, point.Y - 8 - dropHint.DesiredSize.Height);
+    }
+
+    /// <summary>
+    /// Items drop on ports or adapters (to go at that position) or on the hexagon (to make a new
+    /// port); adapters drop on ports or adapters; ports drop on ports.
+    /// </summary>
     private static Hit? Accepts(IDataObject data, Hit? target)
     {
         if (target is null) return null;
         if (data.GetDataPresent(DragFormats.Item)) return target;
+        if (target.Kind == HexagonKind) return null;
         if (data.GetData(DragFormats.Adapter) is string adapterId) return adapterId == target.Id ? null : target;
         if (data.GetData(DragFormats.Port) is string portId)
             return target.Kind == DragFormats.Port && portId != target.Id ? target : null;

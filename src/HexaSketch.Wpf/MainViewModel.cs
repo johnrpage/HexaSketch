@@ -81,6 +81,9 @@ public sealed partial class MainViewModel : ObservableObject
     public void PlaceItem(string elementId, string portId, int? index) =>
         Try(() => Select(tasks.Place(elementId, portId, index)));
 
+    public void PlaceOnNewPort(string elementId, Side side) =>
+        Try(() => Select(tasks.PlaceOnNewPort(elementId, side)));
+
     public void MoveAdapter(string adapterId, string portId, int? index) =>
         Try(() => tasks.MoveAdapter(adapterId, portId, index));
 
@@ -96,9 +99,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (index >= 0) Try(() => tasks.MovePort(portId, index));
     }
 
-    public void AddAdapterTo(string portId) => Try(() =>
+    public void AddAdapterTo(string portId, AdapterKind kind = AdapterKind.Real) => Try(() =>
     {
-        Select(tasks.AddAdapter(portId));
+        Select(tasks.AddAdapter(portId, kind));
         RequestRename();
     });
 

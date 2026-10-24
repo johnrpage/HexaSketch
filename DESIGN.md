@@ -25,8 +25,8 @@ A file named on the command line is opened: a `.contextsketch.json` starts a ske
 ## Sketching
 
 1. **New from context diagram** reads the CD. The system becomes the hexagon, the User port is created, and **each primary actor becomes a Real adapter on the User port** (technology from its relationship, e.g. WPF).
-2. Every other CD item waits in the **list on the left**. **Drag one onto any port** (driving or driven, no restrictions) and it becomes an adapter there, leaving the list. One CD item makes one adapter.
-3. **Add driving port / Add driven port** add ports with default names, ready to rename. **Add adapter** adds a hand-made adapter (no CD source), e.g. a fake.
+2. Every other CD item waits in the **list on the left**. **Drag one onto any port** (driving or driven, no restrictions) and it becomes an adapter there, leaving the list. One CD item makes one adapter. **Drop one on the hexagon** (or near its edge) to make a new port named after it, with the item as its adapter: driving if dropped on the left half, driven on the right.
+3. **Add driving port / Add driven port** add ports with default names, ready to rename. **Add adapter** adds a hand-made adapter (no CD source). A port's right-click menu adds a real, fake or simulated one; fakes and simulators are named after their kind.
 4. Adapters can be dragged to other ports (including off the User port). Dragging an adapter back onto the list, or deleting it, returns its CD item to the list.
 5. **Deleting a port** asks first if it has adapters; CD-sourced adapters return to the list, hand-made ones are deleted. The User port can't be deleted.
 6. **Properties panel**: port name and description; adapter name, kind (Real, Fake, Simulated), technology and description. Double-click to rename, right-click for a menu, Delete to delete.

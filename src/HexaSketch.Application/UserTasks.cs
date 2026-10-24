@@ -22,7 +22,10 @@ public interface UserTasks
     void MovePort(string portId, int indexOnSide);
 
     string Place(string elementId, string portId, int? index = null);
-    string AddAdapter(string portId);
+    string AddAdapter(string portId, AdapterKind kind = AdapterKind.Real);
+
+    /// <summary>Makes a port named after a context diagram element and places the element on it. One undo step.</summary>
+    string PlaceOnNewPort(string elementId, Side side);
     void MoveAdapter(string adapterId, string portId, int? index = null);
     void RemoveAdapter(string adapterId);
     void RenameAdapter(string adapterId, string name);

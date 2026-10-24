@@ -79,6 +79,68 @@ public class PortsAndAdapters : Sketching
         Assert.Equal("InMemoryStore", adapter.CodeName);
     }
 
+    [Theory]
+    [InlineData(AdapterKind.Fake, "Fake")]
+    [InlineData(AdapterKind.Simulated, "Simulated")]
+    public void Fake_and_simulated_adapters_are_named_after_their_kind(AdapterKind kind, string name)
+    {
+        Start();
+        var port = Tasks.AddPort(Side.Driven);
+
+        Tasks.AddAdapter(port, kind);
+        Tasks.AddAdapter(port, kind);
+
+        Assert.Equal([name, $"{name} 2"], Port("Port 1").Adapters.Select(a => a.Name));
+        Assert.All(Port("Port 1").Adapters, a => Assert.Equal(kind, a.Kind));
+    }
+
+    [Fact]
+    public void Dropping_an_item_on_the_hexagon_makes_a_port_named_after_it()
+    {
+        Start();
+
+        Tasks.PlaceOnNewPort(Item("Jira"), Side.Driven);
+
+        var port = Port("Jira");
+        Assert.Equal(Side.Driven, port.Side);
+        Assert.Equal(["Jira"], port.Adapters.Select(a => a.Name));
+        Assert.DoesNotContain("Jira", Sketch.Unplaced.Select(i => i.Name));
+    }
+
+    [Fact]
+    public void A_new_port_from_an_item_gets_a_fresh_name_if_the_name_is_taken()
+    {
+        Start();
+        Tasks.RenamePort(Tasks.AddPort(Side.Driving), "Jira");
+
+        Tasks.PlaceOnNewPort(Item("Jira"), Side.Driving);
+
+        Assert.Equal(Side.Driving, Port("Jira 2").Side);
+    }
+
+    [Fact]
+    public void Making_a_port_from_an_item_is_one_undo_step()
+    {
+        Start();
+        Tasks.PlaceOnNewPort(Item("Jira"), Side.Driven);
+
+        Tasks.Undo();
+
+        Assert.Single(Sketch.Ports);
+        Assert.Contains("Jira", Sketch.Unplaced.Select(i => i.Name));
+    }
+
+    [Fact]
+    public void An_item_already_placed_cannot_make_a_new_port()
+    {
+        Start();
+        var jira = Item("Jira");
+        Tasks.PlaceOnNewPort(jira, Side.Driven);
+
+        Assert.Throws<SketchRuleException>(() => Tasks.PlaceOnNewPort(jira, Side.Driven));
+        Assert.Equal(2, Sketch.Ports.Count);
+    }
+
     [Fact]
     public void An_adapter_can_be_moved_off_the_User_port_onto_another_port()
     {

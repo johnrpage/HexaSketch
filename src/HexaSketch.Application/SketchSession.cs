@@ -118,7 +118,8 @@ public sealed class SketchSession(ContextDiagrams contextDiagrams, Sketches sket
     public void MovePort(string portId, int indexOnSide) => Edit(s => s.MovePort(portId, indexOnSide));
 
     public string Place(string elementId, string portId, int? index = null) => Edit(s => s.Place(elementId, portId, index).Id);
-    public string AddAdapter(string portId) => Edit(s => s.AddAdapter(portId).Id);
+    public string AddAdapter(string portId, AdapterKind kind = AdapterKind.Real) => Edit(s => s.AddAdapter(portId, kind).Id);
+    public string PlaceOnNewPort(string elementId, Side side) => Edit(s => s.PlaceOnNewPort(elementId, side).Id);
     public void MoveAdapter(string adapterId, string portId, int? index = null) => Edit(s => s.MoveAdapter(adapterId, portId, index));
     public void RemoveAdapter(string adapterId) => Edit(s => s.RemoveAdapter(adapterId));
     public void RenameAdapter(string adapterId, string name) => Edit(s => s.RenameAdapter(adapterId, name));

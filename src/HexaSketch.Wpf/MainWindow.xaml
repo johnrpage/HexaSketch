@@ -93,7 +93,7 @@
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="Context diagram items" Style="{StaticResource Heading}" />
                 <TextBlock DockPanel.Dock="Top" Style="{StaticResource Note}" Margin="0,0,0,8"
-                           Text="Drag an item onto a port to make it an adapter. Drag an adapter back here to take it off." />
+                           Text="Drag an item onto a port to make it an adapter, or onto the hexagon to make a new port for it (left half: driving, right half: driven). Drag an adapter back here to take it off." />
                 <ListBox x:Name="ItemList" ItemsSource="{Binding Unplaced}" AllowDrop="True" BorderThickness="1" BorderBrush="#ddd"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          PreviewMouseLeftButtonDown="ItemList_PreviewMouseLeftButtonDown"
