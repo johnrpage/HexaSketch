@@ -16,6 +16,8 @@ public partial class App : System.Windows.Application
             new FileSystemContextDiagrams(),
             new FileSystemSketches(),
             new FileSystemExports());
-        new MainWindow(session, session).Show();
+        var window = new MainWindow(session, session);
+        window.Show();
+        if (e.Args.Length > 0) window.OpenFromCommandLine(e.Args[0]);
     }
 }

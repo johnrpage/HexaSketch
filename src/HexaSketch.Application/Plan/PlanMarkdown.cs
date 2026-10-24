@@ -30,13 +30,13 @@ public static class PlanMarkdown
         md.AppendLine();
         md.AppendLine("```");
         md.AppendLine($"{s}.sln");
-        foreach (var project in plan.Projects)
+        foreach (var project in Ordered(plan))
             md.AppendLine($"  {project.Folder}/");
         md.AppendLine("```");
         md.AppendLine();
         md.AppendLine("| Project | Template | Role |");
         md.AppendLine("|---|---|---|");
-        foreach (var project in plan.Projects)
+        foreach (var project in Ordered(plan))
             md.AppendLine($"| `{project.Name}` | `{project.Template}` | {RoleText(project.Role)} |");
         md.AppendLine();
 
@@ -44,7 +44,7 @@ public static class PlanMarkdown
         md.AppendLine();
         md.AppendLine("| Project | References |");
         md.AppendLine("|---|---|");
-        foreach (var project in plan.Projects)
+        foreach (var project in Ordered(plan))
             md.AppendLine($"| `{project.Name}` | {(project.References.Count == 0 ? "nothing" : string.Join(", ", project.References.Select(r => $"`{r}`")))} |");
         md.AppendLine();
         md.AppendLine("Rules:");
@@ -174,6 +174,9 @@ public static class PlanMarkdown
 
         return md.ToString();
     }
+
+    private static IEnumerable<PlannedProject> Ordered(SolutionPlan plan) =>
+        plan.Projects.OrderBy(p => p.Role == ProjectRole.Specs);
 
     private static int Count(IEnumerable<PlannedPort> ports, Side side) => ports.Count(p => p.Side == side);
 

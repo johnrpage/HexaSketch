@@ -30,6 +30,8 @@ public partial class MainWindow : Window
         Surface.MouseRightButtonUp += Surface_RightClick;
     }
 
+    public void OpenFromCommandLine(string path) => viewModel.OpenFromCommandLine(path);
+
     protected override void OnClosing(CancelEventArgs e)
     {
         if (!viewModel.ConfirmDiscard()) e.Cancel = true;

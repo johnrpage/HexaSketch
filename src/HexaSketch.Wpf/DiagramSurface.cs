@@ -108,7 +108,7 @@ public sealed class DiagramSurface : Border
         Add(Line(view.CentreLine, Muted, 1, dashed: true));
         DrawHexagon(view.Hexagon);
         foreach (var port in view.Ports) DrawPort(port, selected);
-        Add(Text(view.Title, 18, Ink, bold: true), view.Bounds.X + 20, view.Bounds.Y + 30, centred: false);
+        Add(Text(view.Title, 18, Ink, bold: true), view.Bounds.X + 20, view.Bounds.Y + 30, LabelAlign.Start);
     }
 
     private void DrawHexagon(HexagonShape h)
@@ -180,7 +180,7 @@ public sealed class DiagramSurface : Border
         Canvas.SetTop(circle, port.Centre.Y - port.Radius);
         Add(circle);
         dropTargets[port.Id] = circle;
-        Add(Text(port.Name, 14, PortInk, bold: true), port.Label.X, port.Label.Y - 5);
+        Add(Text(port.Name, 14, PortInk, bold: true), port.Label.X, port.Label.Y, port.LabelAlign);
     }
 
     private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -297,11 +297,16 @@ public sealed class DiagramSurface : Border
 
     private void Add(UIElement element) => content.Children.Add(element);
 
-    private void Add(TextBlock text, double x, double y, bool centred = true)
+    private void Add(TextBlock text, double x, double y, LabelAlign align = LabelAlign.Middle)
     {
         text.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         var size = text.DesiredSize;
-        Canvas.SetLeft(text, centred ? x - size.Width / 2 : x);
+        Canvas.SetLeft(text, align switch
+        {
+            LabelAlign.Start => x,
+            LabelAlign.End => x - size.Width,
+            _ => x - size.Width / 2,
+        });
         Canvas.SetTop(text, y - size.Height / 2);
         content.Children.Add(text);
     }

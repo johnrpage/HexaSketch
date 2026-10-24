@@ -33,6 +33,10 @@ public sealed record AdapterShape(
     DiagramRect Box,
     DiagramLine Link);
 
+/// <summary>Which end of the label text sits on the label point.</summary>
+public enum LabelAlign { Start, Middle, End }
+
+/// <summary>A port on its stalk. The label point is the vertical middle of the name text.</summary>
 public sealed record PortShape(
     string Id,
     string Name,
@@ -42,6 +46,7 @@ public sealed record PortShape(
     double Radius,
     DiagramLine Stalk,
     DiagramPoint Label,
+    LabelAlign LabelAlign,
     IReadOnlyList<AdapterShape> Adapters);
 
 /// <summary>A sketch laid out for drawing. Screen and SVG both draw from this, so they always match.</summary>

@@ -116,6 +116,15 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Opens a file named on the command line: a context diagram starts a sketch, anything else is a sketch.</summary>
+    public void OpenFromCommandLine(string path)
+    {
+        if (path.EndsWith(".contextsketch.json", StringComparison.OrdinalIgnoreCase))
+            Loaded(tasks.StartFrom(path), "Can't start from this context diagram");
+        else
+            Loaded(tasks.Open(path), "Can't open this sketch");
+    }
+
     [RelayCommand]
     private void NewFromContextDiagram()
     {

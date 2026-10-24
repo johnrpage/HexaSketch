@@ -28,6 +28,8 @@ public static class DiagramLayout
         var ports = new List<PortShape>();
         foreach (var (port, angle) in Angles(sketch))
             ports.Add(PortAt(port, angle));
+        foreach (var side in new[] { Side.Driving, Side.Driven })
+            SeparateColumns(ports, side);
 
         var content = Bound(hexagon.Corners
             .Concat(ports.SelectMany(PortExtent)));
@@ -128,18 +130,84 @@ public static class DiagramLayout
                 new DiagramLine(TowardsEdge(centre, target, radius), target)));
         }
 
-        return new PortShape(port.Id, port.Name, port.Side, port.IsUser, centre, radius, stalk,
-            new DiagramPoint(centre.X, centre.Y - radius - 8), adapters);
+        var (label, align) = LabelFor(angle, centre, radius, right);
+        return new PortShape(port.Id, port.Name, port.Side, port.IsUser, centre, radius, stalk, label, align, adapters);
     }
+
+    /// <summary>
+    /// Ports near three or nine o'clock have their name centred above them. Diagonal ports have it on
+    /// the side away from both the stalk (towards the hexagon) and the adapters (outwards): above for
+    /// upper ports, below for lower ones, and reaching back towards the centre line.
+    /// </summary>
+    private static (DiagramPoint, LabelAlign) LabelFor(double angle, DiagramPoint centre, double radius, bool right)
+    {
+        var tilt = right ? angle : 180 - angle;
+        const double gap = 16;
+        if (Math.Abs(tilt) <= 10)
+            return (new(centre.X, centre.Y - radius - gap), LabelAlign.Middle);
+        var y = tilt > 0 ? centre.Y - radius - gap : centre.Y + radius + gap;
+        return (new(centre.X, y), right ? LabelAlign.End : LabelAlign.Start);
+    }
+
+    /// <summary>
+    /// Busy neighbouring ports can have overlapping adapter columns. Working outwards from the port
+    /// nearest the middle of the side, push each column up or down until it clears its neighbour and
+    /// that neighbour's label.
+    /// </summary>
+    private static void SeparateColumns(List<PortShape> ports, Side side)
+    {
+        const double gap = 16;
+        var onSide = ports.Where(p => p.Side == side).OrderBy(p => p.Centre.Y).ToList();
+        if (onSide.Count < 2) return;
+        var pivot = onSide.IndexOf(onSide.MinBy(p => Math.Abs(p.Centre.Y))!);
+
+        for (var i = pivot - 1; i >= 0; i--)
+        {
+            var limit = Top(onSide[i + 1]) - gap;
+            var bottom = Bottom(onSide[i]);
+            if (bottom > limit) onSide[i] = Shift(onSide[i], limit - bottom);
+        }
+        for (var i = pivot + 1; i < onSide.Count; i++)
+        {
+            var limit = Bottom(onSide[i - 1]) + gap;
+            var top = Top(onSide[i]);
+            if (top < limit) onSide[i] = Shift(onSide[i], limit - top);
+        }
+        foreach (var shifted in onSide)
+            ports[ports.FindIndex(p => p.Id == shifted.Id)] = shifted;
+
+        static double Top(PortShape p) =>
+            Math.Min(p.Adapters.Count > 0 ? p.Adapters[0].Box.Y : double.MaxValue, p.Centre.Y - p.Radius - 26);
+
+        static double Bottom(PortShape p) =>
+            Math.Max(p.Adapters.Count > 0 ? p.Adapters[^1].Box.Bottom : double.MinValue, p.Centre.Y + p.Radius + 26);
+    }
+
+    /// <summary>Moves a port's adapter column up or down, re-aiming the links from the port circle.</summary>
+    private static PortShape Shift(PortShape port, double dy) => port with
+    {
+        Adapters = port.Adapters.Select(a =>
+        {
+            var box = a.Box with { Y = a.Box.Y + dy };
+            var target = a.Link.To with { Y = a.Link.To.Y + dy };
+            return a with { Box = box, Link = new DiagramLine(TowardsEdge(port.Centre, target, port.Radius), target) };
+        }).ToList(),
+    };
 
     private static IEnumerable<DiagramPoint> PortExtent(PortShape port)
     {
         var r = port.Radius;
         yield return new(port.Centre.X - r, port.Centre.Y - r);
         yield return new(port.Centre.X + r, port.Centre.Y + r);
-        var half = TextWidth(port.Name, 14) / 2;
-        yield return new(port.Label.X - half, port.Label.Y - 16);
-        yield return new(port.Label.X + half, port.Label.Y);
+        var width = TextWidth(port.Name, 14);
+        var left = port.LabelAlign switch
+        {
+            LabelAlign.Start => port.Label.X,
+            LabelAlign.End => port.Label.X - width,
+            _ => port.Label.X - width / 2,
+        };
+        yield return new(left, port.Label.Y - 10);
+        yield return new(left + width, port.Label.Y + 10);
         foreach (var a in port.Adapters)
         {
             yield return new(a.Box.X, a.Box.Y);

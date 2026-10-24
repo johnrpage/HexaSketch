@@ -65,7 +65,8 @@ public static class SvgDiagram
         yield return new XElement(Svg + "circle",
             new XAttribute("cx", N(port.Centre.X)), new XAttribute("cy", N(port.Centre.Y)), new XAttribute("r", N(port.Radius)),
             new XAttribute("fill", "#ffffff"), new XAttribute("stroke", PortInk), new XAttribute("stroke-width", N(weight)));
-        yield return Text(port.Label with { Y = port.Label.Y - 5 }, port.Name, 14, PortInk, bold: true);
+        var anchor = port.LabelAlign switch { LabelAlign.Start => "start", LabelAlign.End => "end", _ => "middle" };
+        yield return Text(port.Label, port.Name, 14, PortInk, anchor, bold: true);
     }
 
     private static IEnumerable<XElement> Adapter(AdapterShape a)
