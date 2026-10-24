@@ -35,7 +35,7 @@ public static class SvgDiagram
             view.Ports.Select(Port),
             Text(new DiagramPoint(b.X + 20, b.Y + 30), view.Title, 18, Ink, "start", bold: true));
 
-        return new XDocument(new XDeclaration("1.0", "utf-8", null), root).ToString();
+        return new XDeclaration("1.0", "utf-8", null) + Environment.NewLine + root + Environment.NewLine;
     }
 
     private static IEnumerable<XElement> Hexagon(HexagonShape h)
