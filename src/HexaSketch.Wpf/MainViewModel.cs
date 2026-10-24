@@ -374,7 +374,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private static string? Tidy(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 
-    private static string TypeText(ElementType type) => type switch
+    internal static string TypeText(ElementType type) => type switch
     {
         ElementType.PrimaryActor => "primary actor",
         ElementType.SecondaryActor => "secondary actor",

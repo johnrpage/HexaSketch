@@ -44,19 +44,20 @@ public sealed class DiagramSurface : Border
     private Point? panFrom;
     private (Hit Hit, Point At)? pressed;
     private Shape? hovered;
-    private bool fitPending = true;
+    private bool autoFit = true;
 
     public DiagramSurface()
     {
         Background = Brushes.White;
         ClipToBounds = true;
         Focusable = true;
+        FocusVisualStyle = null;
         AllowDrop = true;
         content.RenderTransform = new TransformGroup { Children = { scale, offset } };
         Child = content;
 
         DataContextChanged += (_, _) => Attach();
-        SizeChanged += (_, _) => { if (fitPending) Fit(); };
+        SizeChanged += (_, _) => { if (autoFit) Fit(); };
         MouseLeftButtonDown += OnMouseDown;
         MouseMove += OnMouseMove;
         MouseLeftButtonUp += (_, _) => { panFrom = null; pressed = null; ReleaseMouseCapture(); };
@@ -69,15 +70,16 @@ public sealed class DiagramSurface : Border
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
-    /// <summary>Scales and centres the diagram so all of it is visible.</summary>
-    public void Fit()
+    /// <summary>Fits the diagram to the window, and keeps it fitted as it changes until the user pans or zooms.</summary>
+    public void FitToWindow()
     {
-        if (ViewModel?.Diagram is not { } view || ActualWidth < 1 || ActualHeight < 1)
-        {
-            fitPending = true;
-            return;
-        }
-        fitPending = false;
+        autoFit = true;
+        Fit();
+    }
+
+    private void Fit()
+    {
+        if (ViewModel?.Diagram is not { } view || ActualWidth < 1 || ActualHeight < 1) return;
         var b = view.Bounds;
         var s = Math.Min(1.2, Math.Min(ActualWidth / b.Width, ActualHeight / b.Height) * 0.95);
         scale.ScaleX = scale.ScaleY = s;
@@ -93,7 +95,7 @@ public sealed class DiagramSurface : Border
             if (e.PropertyName is nameof(MainViewModel.Diagram) or nameof(MainViewModel.SelectedId))
                 Dispatcher.BeginInvoke(Rebuild);
         };
-        vm.SketchLoaded += (_, _) => Dispatcher.BeginInvoke(Fit);
+        vm.SketchLoaded += (_, _) => Dispatcher.BeginInvoke(FitToWindow);
         Rebuild();
     }
 
@@ -109,6 +111,7 @@ public sealed class DiagramSurface : Border
         DrawHexagon(view.Hexagon);
         foreach (var port in view.Ports) DrawPort(port, selected);
         Add(Text(view.Title, 18, Ink, bold: true), view.Bounds.X + 20, view.Bounds.Y + 30, LabelAlign.Start);
+        if (autoFit) Fit();
     }
 
     private void DrawHexagon(HexagonShape h)
@@ -207,6 +210,7 @@ public sealed class DiagramSurface : Border
         var at = e.GetPosition(this);
         if (panFrom is { } from && e.LeftButton == MouseButtonState.Pressed)
         {
+            autoFit = false;
             offset.X += at.X - from.X;
             offset.Y += at.Y - from.Y;
             panFrom = at;
@@ -226,6 +230,7 @@ public sealed class DiagramSurface : Border
     {
         var at = e.GetPosition(this);
         var factor = e.Delta > 0 ? 1.1 : 1 / 1.1;
+        autoFit = false;
         var next = Math.Clamp(scale.ScaleX * factor, 0.2, 4);
         factor = next / scale.ScaleX;
         scale.ScaleX = scale.ScaleY = next;

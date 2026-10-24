@@ -6,6 +6,7 @@
         FontFamily="Segoe UI" FontSize="13">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="Visible" />
+        <local:ElementTypeText x:Key="TypeText" />
         <Style x:Key="Heading" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="14" />
@@ -74,6 +75,8 @@
                 <Button Content="Undo" Command="{Binding UndoCommand}" />
                 <Button Content="Redo" Command="{Binding RedoCommand}" />
                 <Separator Margin="6,0" />
+                <Button Content="Fit" Click="Fit_Click" ToolTip="Fit the diagram to the window and keep it fitted (Ctrl+0)" />
+                <Separator Margin="6,0" />
                 <Button Content="Export diagram" Command="{Binding ExportDiagramCommand}" />
                 <Button Content="Export plan" Command="{Binding ExportPlanCommand}" />
             </StackPanel>
@@ -101,7 +104,7 @@
                             <StackPanel Margin="2,4" ToolTip="{Binding Description}" Cursor="Hand">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Foreground="#777" FontSize="11" TextTrimming="CharacterEllipsis">
-                                    <Run Text="{Binding Type, Mode=OneWay}" /><Run Text="  " /><Run Text="{Binding Technology, Mode=OneWay}" />
+                                    <Run Text="{Binding Type, Mode=OneWay, Converter={StaticResource TypeText}}" /><Run Text=" · " /><Run Text="{Binding Technology, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
                         </DataTemplate>

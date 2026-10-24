@@ -12,6 +12,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel viewModel;
     private Point? itemPressedAt;
+    private UnplacedItemView? itemPressed;
 
     public MainWindow(UserTasks tasks, UserQueries queries)
     {
@@ -57,6 +58,11 @@ public partial class MainWindow : Window
             Surface.Focus();
             e.Handled = true;
         }
+        else if (e.Key is Key.D0 or Key.NumPad0 && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            Surface.FitToWindow();
+            e.Handled = true;
+        }
         else if (e.Key == Key.Delete && e.OriginalSource is not TextBox && viewModel.DeleteCommand.CanExecute(null))
         {
             viewModel.DeleteCommand.Execute(null);
@@ -92,20 +98,26 @@ public partial class MainWindow : Window
 
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 
-    private void ItemList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+    private void Fit_Click(object sender, RoutedEventArgs e) => Surface.FitToWindow();
+
+    // The item is remembered on press: once the ListBox captures the mouse, moves come from the ListBox itself.
+    private void ItemList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
         itemPressedAt = e.GetPosition(ItemList);
+        itemPressed = ItemUnder(e.OriginalSource as DependencyObject);
+    }
 
     private void ItemList_PreviewMouseMove(object sender, MouseEventArgs e)
     {
-        if (itemPressedAt is not { } from || e.LeftButton != MouseButtonState.Pressed) return;
+        if (itemPressedAt is not { } from || itemPressed is not { } item || e.LeftButton != MouseButtonState.Pressed) return;
         var at = e.GetPosition(ItemList);
         if (Math.Abs(at.X - from.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(at.Y - from.Y) < SystemParameters.MinimumVerticalDragDistance)
             return;
 
         itemPressedAt = null;
-        if (ItemUnder(e.OriginalSource as DependencyObject) is { } item)
-            DragDrop.DoDragDrop(ItemList, new DataObject(DragFormats.Item, item.ElementId), DragDropEffects.Move);
+        itemPressed = null;
+        DragDrop.DoDragDrop(ItemList, new DataObject(DragFormats.Item, item.ElementId), DragDropEffects.Move);
     }
 
     private void ItemList_DragOver(object sender, DragEventArgs e)
