@@ -134,8 +134,14 @@ public partial class MainWindow : Window
 
     private static UnplacedItemView? ItemUnder(DependencyObject? source)
     {
-        for (var node = source; node is not null; node = VisualTreeHelper.GetParent(node))
+        for (var node = source; node is not null; node = Parent(node))
             if (node is ListBoxItem { DataContext: UnplacedItemView item }) return item;
         return null;
+
+        // Text runs aren't visuals, so they only have a logical parent (their TextBlock).
+        static DependencyObject? Parent(DependencyObject node) =>
+            node is Visual or System.Windows.Media.Media3D.Visual3D
+                ? VisualTreeHelper.GetParent(node)
+                : LogicalTreeHelper.GetParent(node);
     }
 }
