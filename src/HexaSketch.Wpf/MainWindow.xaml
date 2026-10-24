@@ -1,12 +1,159 @@
 ﻿<Window x:Class="HexaSketch.Wpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HexaSketch.Wpf"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="{Binding WindowTitle}" Width="1280" Height="800" MinWidth="900" MinHeight="500"
+        FontFamily="Segoe UI" FontSize="13">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="Visible" />
+        <Style x:Key="Heading" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#555" />
+            <Setter Property="Margin" Value="0,8,0,2" />
+        </Style>
+        <Style x:Key="Note" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#777" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,10,0,0" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="3" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+        </Style>
+    </Window.Resources>
 
-    </Grid>
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewFromContextDiagramCommand}" />
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveAsCommand}" />
+        <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}" />
+        <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}" />
+    </Window.InputBindings>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Padding="2">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New from context diagram..." InputGestureText="Ctrl+N" Command="{Binding NewFromContextDiagramCommand}" />
+                <MenuItem Header="_Open sketch..." InputGestureText="Ctrl+O" Command="{Binding OpenCommand}" />
+                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Command="{Binding SaveCommand}" />
+                <MenuItem Header="Save _as..." InputGestureText="Ctrl+Shift+S" Command="{Binding SaveAsCommand}" />
+                <Separator />
+                <MenuItem Header="Export _diagram (SVG)..." Command="{Binding ExportDiagramCommand}" />
+                <MenuItem Header="Export _plan (Markdown)..." Command="{Binding ExportPlanCommand}" />
+                <Separator />
+                <MenuItem Header="E_xit" Click="Exit_Click" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" Command="{Binding UndoCommand}" />
+                <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" Command="{Binding RedoCommand}" />
+                <Separator />
+                <MenuItem Header="_Delete" InputGestureText="Del" Command="{Binding DeleteCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Sketch">
+                <MenuItem Header="Add dri_ving port" Command="{Binding AddDrivingPortCommand}" />
+                <MenuItem Header="Add dri_ven port" Command="{Binding AddDrivenPortCommand}" />
+                <MenuItem Header="Add _adapter to selected port" Command="{Binding AddAdapterCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <Border DockPanel.Dock="Top" BorderBrush="#ddd" BorderThickness="0,0,0,1" Background="#fafafa" Padding="6">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Add driving port" Command="{Binding AddDrivingPortCommand}" />
+                <Button Content="Add driven port" Command="{Binding AddDrivenPortCommand}" />
+                <Button Content="Add adapter" Command="{Binding AddAdapterCommand}" ToolTip="Add an adapter by hand to the selected port" />
+                <Separator Margin="6,0" />
+                <Button Content="Undo" Command="{Binding UndoCommand}" />
+                <Button Content="Redo" Command="{Binding RedoCommand}" />
+                <Separator Margin="6,0" />
+                <Button Content="Export diagram" Command="{Binding ExportDiagramCommand}" />
+                <Button Content="Export plan" Command="{Binding ExportPlanCommand}" />
+            </StackPanel>
+        </Border>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Status}" TextTrimming="CharacterEllipsis" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- Left: context diagram items waiting to be placed -->
+        <Border DockPanel.Dock="Left" Width="230" BorderBrush="#ddd" BorderThickness="0,0,1,0" Padding="10">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Context diagram items" Style="{StaticResource Heading}" />
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource Note}" Margin="0,0,0,8"
+                           Text="Drag an item onto a port to make it an adapter. Drag an adapter back here to take it off." />
+                <ListBox x:Name="ItemList" ItemsSource="{Binding Unplaced}" AllowDrop="True" BorderThickness="1" BorderBrush="#ddd"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         PreviewMouseLeftButtonDown="ItemList_PreviewMouseLeftButtonDown"
+                         PreviewMouseMove="ItemList_PreviewMouseMove"
+                         DragOver="ItemList_DragOver" Drop="ItemList_Drop">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="2,4" ToolTip="{Binding Description}" Cursor="Hand">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Foreground="#777" FontSize="11" TextTrimming="CharacterEllipsis">
+                                    <Run Text="{Binding Type, Mode=OneWay}" /><Run Text="  " /><Run Text="{Binding Technology, Mode=OneWay}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Right: properties of the selection -->
+        <Border DockPanel.Dock="Right" Width="270" BorderBrush="#ddd" BorderThickness="1,0,0,0" Padding="12">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <StackPanel Visibility="{Binding IsNothingSelected, Converter={StaticResource Visible}}">
+                        <TextBlock Text="System" Style="{StaticResource Heading}" />
+                        <TextBlock Text="{Binding SystemDetails}" TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource Note}"
+                                   Text="Select a port or adapter to edit it. Double-click to rename. Right-click for more. Drag the background to pan; use the wheel to zoom." />
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding IsPortSelected, Converter={StaticResource Visible}}">
+                        <TextBlock Text="Port" Style="{StaticResource Heading}" />
+                        <TextBlock Text="Name" Style="{StaticResource Label}" />
+                        <TextBox x:Name="PortNameBox" Text="{Binding PortName}" />
+                        <TextBlock Text="Description" Style="{StaticResource Label}" />
+                        <TextBox Text="{Binding PortDescription}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
+                        <TextBlock Text="{Binding PortDetails}" Style="{StaticResource Note}" />
+                        <Button Content="Add adapter" Command="{Binding AddAdapterCommand}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding IsAdapterSelected, Converter={StaticResource Visible}}">
+                        <TextBlock Text="Adapter" Style="{StaticResource Heading}" />
+                        <TextBlock Text="Name" Style="{StaticResource Label}" />
+                        <TextBox x:Name="AdapterNameBox" Text="{Binding AdapterName}" />
+                        <TextBlock Text="Kind" Style="{StaticResource Label}" />
+                        <ComboBox ItemsSource="{Binding Kinds}" SelectedItem="{Binding AdapterKind}" />
+                        <TextBlock Text="Technology" Style="{StaticResource Label}" />
+                        <TextBox Text="{Binding AdapterTechnology}" />
+                        <TextBlock Text="Description" Style="{StaticResource Label}" />
+                        <TextBox Text="{Binding AdapterDescription}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
+                        <TextBlock Text="{Binding AdapterDetails}" Style="{StaticResource Note}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Centre: the diagram -->
+        <Grid>
+            <local:DiagramSurface x:Name="Surface" />
+            <TextBlock Text="Start from a context diagram: File &gt; New from context diagram (Ctrl+N), or open a saved sketch (Ctrl+O)."
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#888" FontSize="15"
+                       TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center" IsHitTestVisible="False"
+                       x:Name="EmptyHint" />
+        </Grid>
+    </DockPanel>
 </Window>
