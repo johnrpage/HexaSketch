@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\HexaSketch.Application\HexaSketch.Application.csproj" />
+    <ProjectReference Include="..\HexaSketch.ContextDiagrams.FileSystem\HexaSketch.ContextDiagrams.FileSystem.csproj" />
+    <ProjectReference Include="..\HexaSketch.Sketches.FileSystem\HexaSketch.Sketches.FileSystem.csproj" />
+    <ProjectReference Include="..\HexaSketch.Exports.FileSystem\HexaSketch.Exports.FileSystem.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>
