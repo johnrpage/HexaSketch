@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "title": "Ports Sketch - Context Diagram",
+  "elements": [
+    {
+      "id": "b7c10a01",
+      "type": "system",
+      "name": "Ports Sketch",
+      "description": "Sketch a ports-and-adapters diagram from a context diagram, then export the diagram and a solution plan",
+      "technology": "Same stack as Context Sketch?",
+      "x": 0,
+      "y": 0,
+      "pinned": false
+    },
+    {
+      "id": "b7c10a02",
+      "type": "primaryActor",
+      "name": "Developer",
+      "description": "Imports a context diagram, sketches ports and adapters, exports diagram and plan",
+      "technology": "User",
+      "x": -345,
+      "y": 0,
+      "pinned": false
+    },
+    {
+      "id": "b7c10a03",
+      "type": "externalSystem",
+      "name": "Context Sketch",
+      "description": "The existing context diagram tool. Its JSON export is the starting point",
+      "technology": ".contextsketch.json",
+      "x": 345,
+      "y": -255,
+      "pinned": false
+    },
+    {
+      "id": "b7c10a04",
+      "type": "storage",
+      "name": "Sketch Files",
+      "description": "Saved ports-and-adapters sketches",
+      "technology": "JSON files",
+      "x": 345,
+      "y": -85,
+      "pinned": false
+    },
+    {
+      "id": "b7c10a05",
+      "type": "storage",
+      "name": "Exports",
+      "description": "Exported diagram and solution plan",
+      "technology": "SVG / Markdown files",
+      "x": 345,
+      "y": 85,
+      "pinned": false
+    },
+    {
+      "id": "b7c10a06",
+      "type": "secondaryActor",
+      "name": "Coding Agent",
+      "description": "Builds the stub solution from the exported plan",
+      "technology": "Claude",
+      "x": 345,
+      "y": 255,
+      "pinned": false
+    }
+  ],
+  "relationships": [
+    {
+      "id": "b7c10b01",
+      "from": "b7c10a02",
+      "to": "b7c10a01",
+      "label": "Sketches and exports",
+      "technology": "UI",
+      "direction": "oneWay"
+    },
+    {
+      "id": "b7c10b02",
+      "from": "b7c10a01",
+      "to": "b7c10a03",
+      "label": "Imports context diagram",
+      "technology": "JSON file",
+      "direction": "oneWay"
+    },
+    {
+      "id": "b7c10b03",
+      "from": "b7c10a01",
+      "to": "b7c10a04",
+      "label": "Saves and loads sketches",
+      "technology": "JSON",
+      "direction": "oneWay"
+    },
+    {
+      "id": "b7c10b04",
+      "from": "b7c10a01",
+      "to": "b7c10a05",
+      "label": "Writes diagram and plan",
+      "technology": "SVG / Markdown",
+      "direction": "oneWay"
+    },
+    {
+      "id": "b7c10b05",
+      "from": "b7c10a01",
+      "to": "b7c10a06",
+      "label": "Provides solution plan (via exported file)",
+      "technology": "Markdown",
+      "direction": "oneWay"
+    }
+  ]
+}
