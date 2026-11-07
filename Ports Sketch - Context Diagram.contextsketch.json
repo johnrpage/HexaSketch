@@ -17,7 +17,7 @@
       "type": "primaryActor",
       "name": "Developer",
       "description": "Imports a context diagram, sketches ports and adapters, exports diagram and plan",
-      "technology": "User",
+      "technology": "UI",
       "x": -345,
       "y": 0,
       "pinned": false
@@ -69,7 +69,6 @@
       "from": "b7c10a02",
       "to": "b7c10a01",
       "label": "Sketches and exports",
-      "technology": "UI",
       "direction": "oneWay"
     },
     {
@@ -77,7 +76,6 @@
       "from": "b7c10a01",
       "to": "b7c10a03",
       "label": "Imports context diagram",
-      "technology": "JSON file",
       "direction": "oneWay"
     },
     {
@@ -85,7 +83,6 @@
       "from": "b7c10a01",
       "to": "b7c10a04",
       "label": "Saves and loads sketches",
-      "technology": "JSON",
       "direction": "oneWay"
     },
     {
@@ -93,7 +90,6 @@
       "from": "b7c10a01",
       "to": "b7c10a05",
       "label": "Writes diagram and plan",
-      "technology": "SVG / Markdown",
       "direction": "oneWay"
     },
     {
@@ -101,7 +97,6 @@
       "from": "b7c10a01",
       "to": "b7c10a06",
       "label": "Provides solution plan (via exported file)",
-      "technology": "Markdown",
       "direction": "oneWay"
     }
   ]

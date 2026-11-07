@@ -34,7 +34,7 @@ public class StartingASketch : Sketching
     }
 
     [Fact]
-    public void A_primary_actor_adapter_takes_its_technology_from_the_relationship()
+    public void A_primary_actor_adapter_takes_its_technology_from_the_actor()
     {
         Start();
 

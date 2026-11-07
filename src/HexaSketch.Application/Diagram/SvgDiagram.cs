@@ -9,15 +9,19 @@ public static class SvgDiagram
 {
     private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
 
-    public const string Ink = "#333333";
-    public const string HexagonFill = "#f4f5f7";
+    // Ink and slate, matching Context Sketch; the User area stays red so it is the one thing that stands out.
+    public const string Ink = "#0F172A";
+    public const string HexagonFill = "#F8FAFC";
     public const string CoreFill = "#ffffff";
     public const string UserFill = "#fdecea";
     public const string UserInk = "#b03a2e";
-    public const string PortInk = "#1168bd";
-    public const string RealFill = "#dbe9f7";
-    public const string StandInInk = "#666666";
-    public const string Muted = "#aaaaaa";
+    public const string PortInk = "#334155";
+    public const string RealFill = "#64748B";
+    public const string RealStroke = "#475569";
+    public const string RealText = "#FFFFFF";
+    public const string RealCaption = "#E2E8F0";
+    public const string StandInInk = "#64748B";
+    public const string Muted = "#94A3B8";
     public const string Font = "Segoe UI, Arial, sans-serif";
 
     public static string Render(DiagramView view)
@@ -77,7 +81,7 @@ public static class SvgDiagram
             new XAttribute("width", N(a.Box.Width)), new XAttribute("height", N(a.Box.Height)),
             new XAttribute("rx", "4"),
             new XAttribute("fill", real ? RealFill : "#ffffff"),
-            new XAttribute("stroke", real ? PortInk : StandInInk),
+            new XAttribute("stroke", real ? RealStroke : StandInInk),
             new XAttribute("stroke-width", "1.2"));
         if (!real) rect.Add(new XAttribute("stroke-dasharray", "5 3"));
         yield return rect;
@@ -85,12 +89,12 @@ public static class SvgDiagram
         var c = a.Box.Centre;
         if (a.Caption is null)
         {
-            yield return Text(c, Fit(a.Name, a.Box.Width, 13), 13, Ink, bold: true);
+            yield return Text(c, Fit(a.Name, a.Box.Width, 13), 13, real ? RealText : Ink, bold: true);
         }
         else
         {
-            yield return Text(c with { Y = c.Y - 7 }, Fit(a.Name, a.Box.Width, 13), 13, Ink, bold: true);
-            yield return Text(c with { Y = c.Y + 10 }, Fit(a.Caption, a.Box.Width, 11), 11, StandInInk);
+            yield return Text(c with { Y = c.Y - 8 }, Fit(a.Name, a.Box.Width, 13), 13, real ? RealText : Ink, bold: true);
+            yield return Text(c with { Y = c.Y + 9 }, Fit(a.Caption, a.Box.Width, 11), 11, real ? RealCaption : StandInInk);
         }
     }
 

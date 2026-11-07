@@ -20,7 +20,7 @@
         "type": "primaryActor",
         "name": "Developer",
         "description": "Imports a context diagram, sketches ports and adapters, exports diagram and plan",
-        "technology": "User",
+        "technology": "WPF",
         "x": -345,
         "y": 0,
         "pinned": false
@@ -62,7 +62,6 @@
         "from": "b7c10a02",
         "to": "b7c10a01",
         "label": "Sketches and exports",
-        "technology": "WPF",
         "direction": "twoWay"
       },
       {
@@ -70,7 +69,6 @@
         "from": "b7c10a03",
         "to": "b7c10a01",
         "label": "Imports context diagram",
-        "technology": "JSON",
         "direction": "oneWay"
       },
       {
@@ -78,7 +76,6 @@
         "from": "b7c10a01",
         "to": "b7c10a04",
         "label": "Saves and loads sketches",
-        "technology": "JSON",
         "direction": "twoWay"
       },
       {
@@ -86,7 +83,6 @@
         "from": "b7c10a01",
         "to": "b7c10a05",
         "label": "Writes diagram and plan",
-        "technology": "SVG / Markdown",
         "direction": "oneWay"
       }
     ]

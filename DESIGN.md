@@ -1,6 +1,6 @@
 # HexaSketch: design overview (v1)
 
-HexaSketch turns a C4 system context diagram (from Context Sketch) into a **ports-and-adapters sketch**, then exports it as an **SVG diagram** and a **Markdown solution plan** a coding agent can build stubs from. It follows ContextSketch's spirit (`ContextSketch-DESIGN.md`): small, fast, plain JSON files, layout handled for you.
+HexaSketch turns a system context diagram (from Context Sketch) into a **ports-and-adapters sketch**, then exports it as an **SVG diagram** and a **Markdown solution plan** a coding agent can build stubs from. It follows ContextSketch's spirit (`ContextSketch-DESIGN.md`): small, fast, plain JSON files, layout handled for you.
 
 `ARCHITECTURE.md` describes the code. This page records what v1 does and why.
 
@@ -19,12 +19,12 @@ A file named on the command line is opened: a `.contextsketch.json` starts a ske
 - A **pointy-topped hexagon** in the middle, with a faint dashed line down the centre of the canvas (behind it) separating **driving (left)** from **driven (right)**.
 - **Domain** is a circle at the centre. **Tasks** and **Queries** fill the space between Domain and the hexagon's left edge, split by a dashed line: the User reaches the Domain only through them.
 - **Ports** are circles on stalks, placed radially. The **User port** is always present, sits at nine o'clock, and has a heavier outline and stalk. Other driving ports alternate above and below it; driven ports spread evenly down the right, top to bottom.
-- **Adapters** hang off their port in a column, linked by a fan of lines. **Real** adapters are solid and filled; **Fake** and **Simulated** ones are dashed. The second line shows the technology (and the kind, if not Real).
+- **Adapters** hang off their port in a column, linked by a fan of lines. **Real** adapters are solid dark slate with white text; **Fake** and **Simulated** ones are white and dashed. The diagram is ink and slate to match Context Sketch, with the User area in red as the one splash of colour and an orange selection highlight. The second line shows the technology (and the kind, if not Real).
 - Layout is automatic. You can reorder (drag a port onto another port on the same side, or an adapter onto another adapter) but not place things freely.
 
 ## Sketching
 
-1. **New from context diagram** reads the CD. The system becomes the hexagon, the User port is created, and **each primary actor becomes a Real adapter on the User port** (technology from its relationship, e.g. WPF).
+1. **New from context diagram** reads the CD. The system becomes the hexagon, the User port is created, and **each primary actor becomes a Real adapter on the User port** (technology from the actor, which says how they reach the system, e.g. WPF).
 2. Every other CD item waits in the **list on the left**. **Drag one onto any port** (driving or driven, no restrictions) and it becomes an adapter there, leaving the list. One CD item makes one adapter. **Drop one on the hexagon** (or near its edge) to make a new port named after it, with the item as its adapter: driving if dropped on the left half, driven on the right.
 3. **Add driving port / Add driven port** add ports with default names, ready to rename. **Add adapter** adds a hand-made adapter (no CD source). A port's right-click menu adds a real, fake or simulated one; fakes and simulators are named after their kind.
 4. Adapters can be dragged to other ports (including off the User port). Dragging an adapter back onto the list, or deleting it, returns its CD item to the list.

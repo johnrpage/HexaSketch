@@ -14,8 +14,8 @@ public static class DiagramLayout
     public const double PortRadius = 20;
     public const double UserPortRadius = 24;
     public const double StalkLength = 55;
-    public const double AdapterHeight = 40;
-    public const double AdapterGap = 8;
+    public const double AdapterHeight = 50;
+    public const double AdapterGap = 10;
     public const double MaxSpread = 75;
     public const double PortSpacing = 50;
 
@@ -44,7 +44,7 @@ public static class DiagramLayout
     public static double TextWidth(string text, double fontSize) => text.Length * fontSize * 0.56;
 
     public static double AdapterWidth(string name, string? caption) =>
-        Math.Clamp(Math.Max(TextWidth(name, 13), TextWidth(caption ?? "", 11)) + 24, 100, 220);
+        Math.Clamp(Math.Max(TextWidth(name, 13), TextWidth(caption ?? "", 11)) + 32, 100, 230);
 
     public static string? CaptionFor(Adapter adapter) => adapter.Kind switch
     {

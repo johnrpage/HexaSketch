@@ -72,7 +72,7 @@ public sealed class FileSystemSketches : HexaSketch.Application.Sketches
             sketch.ContextDiagram.Elements.Select(e => new ElementDto(
                 e.Id, TypeName(e.Type), e.Name, e.Description, e.Technology, e.X, e.Y, e.Pinned)).ToList(),
             sketch.ContextDiagram.Relationships.Select(r => new RelationshipDto(
-                r.Id, r.From, r.To, r.Label, r.Technology, r.Direction == Direction.OneWay ? "oneWay" : "twoWay")).ToList()),
+                r.Id, r.From, r.To, r.Label, r.Direction == Direction.OneWay ? "oneWay" : "twoWay")).ToList()),
         sketch.Ports.Select(p => new PortDto(
             p.Id, p.Name, p.Description, p.Side == Side.Driving ? "driving" : "driven", p.IsUser ? true : null,
             p.Adapters.Select(a => new AdapterDto(
@@ -86,7 +86,7 @@ public sealed class FileSystemSketches : HexaSketch.Application.Sketches
             (cd.Elements ?? []).Select(e => new ContextElement(
                 e.Id, ParseType(e.Type), e.Name, e.Description, e.Technology, e.X, e.Y, e.Pinned)).ToList(),
             (cd.Relationships ?? []).Select(r => new ContextRelationship(
-                r.Id, r.From, r.To, r.Label ?? "", r.Technology,
+                r.Id, r.From, r.To, r.Label ?? "",
                 r.Direction == "twoWay" ? Direction.TwoWay : Direction.OneWay)).ToList());
 
         var ports = (dto.Ports ?? []).Select(p => new PortRecord(
@@ -147,7 +147,7 @@ public sealed class FileSystemSketches : HexaSketch.Application.Sketches
         string Id, string Type, string Name, string? Description, string? Technology, double? X, double? Y, bool Pinned);
 
     private sealed record RelationshipDto(
-        string Id, string From, string To, string? Label, string? Technology, string? Direction);
+        string Id, string From, string To, string? Label, string? Direction);
 
     private sealed record PortDto(
         string Id, string Name, string? Description, string Side, bool? IsUser, List<AdapterDto>? Adapters);

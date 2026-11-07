@@ -1,6 +1,6 @@
 # ContextSketch: design overview
 
-ContextSketch is a small Windows desktop tool for sketching **system context diagrams** (C4 level 1): one system in the middle, the people and systems around it. A diagram takes under a minute to make, saves as readable JSON and exports to SVG.
+ContextSketch is a small Windows desktop tool for sketching **system context diagrams**: one system in the middle, the people and systems around it. A diagram takes under a minute to make, saves as readable JSON and exports to SVG.
 
 `SPEC.md` is the full requirements document. This page explains the ideas behind it.
 
@@ -36,7 +36,7 @@ The aim is to get from nothing to a tidy diagram without ever thinking about lay
 
 1. **A new diagram starts with one system** in the centre. It can be renamed but not deleted.
 2. **Add things with one click.** Toolbar buttons add a primary actor, secondary actor, external system or storage. Each new element gets a default name, is placed automatically and is selected.
-3. **The link to the system is automatic.** Every element has exactly one relationship, with the system, created when it is added. Fill in a label, a technology tag (e.g. `HTTPS/JSON`) and a direction (one-way or two-way) in the properties panel. There is no connect mode.
+3. **The link to the system is automatic.** Every element has exactly one relationship, with the system, created when it is added. Fill in a label (a plain sentence, e.g. "Places orders") and a direction (one-way or two-way) in the properties panel. Relationships carry no technology: that belongs to the elements. There is no connect mode.
 4. **Layout is automatic, with an escape hatch.** Primary actors line up on the left, everything else on the right. Drag an element anywhere and it is *pinned*: auto-layout leaves it alone from then on. **Auto-layout** re-arranges the unpinned elements, and **Auto-layout all** releases every pin first.
 5. **Editing is direct.** Click to select, drag to move, double-click an element to rename it, Delete to remove it (and its line). Drag the background to pan and use the mouse wheel to zoom.
 6. **Files are plain.** Save and Open use `.contextsketch.json`. The title bar shows `*` when there are unsaved changes, and New, Open and Close ask before discarding work. **Export SVG** produces a standalone image cropped to the content.
@@ -54,17 +54,21 @@ A context diagram answers one question: *who and what does this system touch?* T
 
 | Element | Meaning | Zone | Look |
 |---|---|---|---|
-| `system` | The system being designed (exactly one) | Centre | Large, emphasised blue rectangle |
-| `primaryActor` | Initiates interactions | Left | Dark box with a person glyph |
-| `secondaryActor` | Called by the system (e.g. a payment provider) | Top right | Same glyph, light fill, dashed outline |
-| `externalSystem` | Other software the system integrates with | Middle right | Plain grey rectangle |
-| `storage` | Database, file store, queue | Bottom right | Cylinder |
+| `system` | The system being designed (exactly one) | Centre | Large white rectangle with a heavy ink outline |
+| `primaryActor` | Initiates interactions | Left | Slate box with a person glyph |
+| `secondaryActor` | Called by the system (e.g. a payment provider) | Top right | Same glyph, near-white fill, dashed slate outline |
+| `externalSystem` | Other software the system integrates with | Middle right | Plain light slate rectangle |
+| `storage` | Database, file store, queue | Bottom right | Slate cylinder |
+
+Everything around the system is drawn in shades of slate, so the system's ink outline is what the eye lands on. The selection highlight is orange and appears on screen only. All colours live in `DiagramStyle`, which feeds both the canvas and the SVG export.
+
+An element's **technology** is shown as plain, smaller, slightly faded text under its name (no brackets). For a primary actor it says how they reach the system (e.g. `WPF`, `Web browser`, `CLI`). Relationship labels are plain sentences, wrapped to fit their own arrow (a longer arrow gets wider lines, between 12 and 40 characters) over at most three lines, with "…" if still too long. Screen and SVG wrap them the same way.
 
 The primary/secondary split is information for the reader. The app does not enforce who initiates what, and a relationship's arrow direction is independent of it.
 
 ### Layout rules
 
-The system sits at the origin. Primary actors form one column on the left, centred vertically on the system and growing taller rather than wider. On the right, groups stack top to bottom (secondary actors, external systems, storage), centred on the system, and a group with more than five elements wraps into a second column further right. Order follows creation order, pinned elements are never moved, and the same input always gives the same positions.
+The system sits at the origin. Primary actors form one column on the left, centred vertically on the system and growing taller rather than wider. On the right, groups stack top to bottom (secondary actors, external systems, storage), centred on the system, and a group with more than five elements wraps into a second column further right. The gap between the system and each side is normally 140, but widens (up to 300) when a label on that side would otherwise be cut; the layout reruns after a label is edited. Order follows creation order, pinned elements are never moved, and the same input always gives the same positions.
 
 ### File format
 
@@ -76,16 +80,18 @@ Diagrams are JSON with camelCase names and a stable order, so they are readable,
   "title": "Online Shop",
   "elements": [
     { "id": "sys", "type": "system", "name": "Shop Platform", "x": 0, "y": 0, "pinned": false },
+    { "id": "cust", "type": "primaryActor", "name": "Customer", "technology": "Web browser", "x": -345, "y": 0, "pinned": false },
     { "id": "db", "type": "storage", "name": "Orders DB", "technology": "PostgreSQL", "x": 345, "y": 180, "pinned": false }
   ],
   "relationships": [
-    { "id": "r1", "from": "sys", "to": "db", "label": "Reads/writes orders", "technology": "SQL", "direction": "twoWay" }
+    { "id": "r1", "from": "cust", "to": "sys", "label": "Places and tracks orders", "direction": "oneWay" },
+    { "id": "r2", "from": "sys", "to": "db", "label": "Reads and writes orders", "direction": "twoWay" }
   ]
 }
 ```
 
 - **Elements** have an `id`, `type`, `name`, optional `description` and `technology`, a centre position (`x`, `y`) and a `pinned` flag.
-- **Relationships** have an `id`, `from` and `to` element ids, a `label`, an optional `technology` and a `direction` of `oneWay` or `twoWay`.
+- **Relationships** have an `id`, `from` and `to` element ids, a `label` and a `direction` of `oneWay` or `twoWay`. A `technology` on a relationship, found in older files, is ignored on load and dropped on the next save.
 - **Positions are optional on load.** A file without them is laid out automatically, so a hand-written file needs no coordinates.
 
 ### Rules checked on load

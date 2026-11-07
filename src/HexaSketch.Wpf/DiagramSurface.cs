@@ -35,6 +35,9 @@ public sealed class DiagramSurface : Border
     private static readonly Brush UserInk = Brush(SvgDiagram.UserInk);
     private static readonly Brush PortInk = Brush(SvgDiagram.PortInk);
     private static readonly Brush RealFill = Brush(SvgDiagram.RealFill);
+    private static readonly Brush RealStroke = Brush(SvgDiagram.RealStroke);
+    private static readonly Brush RealText = Brush(SvgDiagram.RealText);
+    private static readonly Brush RealCaption = Brush(SvgDiagram.RealCaption);
     private static readonly Brush StandInInk = Brush(SvgDiagram.StandInInk);
     private static readonly Brush Muted = Brush(SvgDiagram.Muted);
     private static readonly Brush Highlight = Brush("#f39c12");
@@ -161,7 +164,7 @@ public sealed class DiagramSurface : Border
             {
                 Width = a.Box.Width, Height = a.Box.Height, RadiusX = 4, RadiusY = 4,
                 Fill = real ? RealFill : Brushes.White,
-                Stroke = a.Id == selected ? Highlight : real ? PortInk : StandInInk,
+                Stroke = a.Id == selected ? Highlight : real ? RealStroke : StandInInk,
                 StrokeThickness = a.Id == selected ? 3 : 1.2,
                 StrokeDashArray = real ? null : [4, 2.5],
                 Tag = new Hit(DragFormats.Adapter, a.Id, port.Id, i),
@@ -174,12 +177,12 @@ public sealed class DiagramSurface : Border
             dropTargets[a.Id] = box;
 
             var c = a.Box.Centre;
-            var name = Text(a.Name, 13, Ink, bold: true, maxWidth: a.Box.Width - 12);
+            var name = Text(a.Name, 13, real ? RealText : Ink, bold: true, maxWidth: a.Box.Width - 12);
             if (a.Caption is null) Add(name, c.X, c.Y);
             else
             {
-                Add(name, c.X, c.Y - 7);
-                Add(Text(a.Caption, 11, StandInInk, maxWidth: a.Box.Width - 12), c.X, c.Y + 10);
+                Add(name, c.X, c.Y - 8);
+                Add(Text(a.Caption, 11, real ? RealCaption : StandInInk, maxWidth: a.Box.Width - 12), c.X, c.Y + 9);
             }
         }
 

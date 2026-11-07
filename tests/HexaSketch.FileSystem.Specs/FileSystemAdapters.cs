@@ -36,6 +36,22 @@ public sealed class FileSystemAdapters : IDisposable
     }
 
     [Fact]
+    public void An_older_context_diagram_with_technology_on_its_arrows_still_opens_and_uses_the_actors_own()
+    {
+        var file = Path.Combine(folder, "older.contextsketch.json");
+        File.WriteAllText(file, """
+            { "schemaVersion": 1, "title": "Older", "elements": [
+                { "id": "s", "type": "system", "name": "Shop" },
+                { "id": "u", "type": "primaryActor", "name": "Customer", "technology": "Web browser" } ],
+              "relationships": [ { "id": "r", "from": "u", "to": "s", "label": "Buys", "technology": "HTTPS", "direction": "oneWay" } ] }
+            """);
+
+        Assert.True(session.StartFrom(file).Succeeded);
+
+        Assert.Equal("Web browser", session.Sketch!.Ports.Single().Adapters.Single().Technology);
+    }
+
+    [Fact]
     public void Reports_a_file_that_is_not_a_context_diagram()
     {
         var file = Path.Combine(folder, "nonsense.json");

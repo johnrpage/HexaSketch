@@ -214,20 +214,13 @@ public sealed class Sketch
 
     public void SetAdapterKind(string adapterId, AdapterKind kind) => FindAdapter(adapterId).Kind = kind;
 
-    private Adapter AdapterFrom(ContextElement element)
-    {
-        // A primary actor's technology is the person's ("User"); the relationship says how they get in ("WPF").
-        var relationship = ContextDiagram.RelationshipOf(element.Id)?.Technology;
-        var technology = element.Type == ElementType.PrimaryActor
-            ? relationship ?? element.Technology
-            : element.Technology ?? relationship;
-
-        return new Adapter(NewId(), element.Name, AdapterKind.Real, element.Id)
+    // The adapter's technology is the element's. For a primary actor that says how they reach the system ("WPF").
+    private Adapter AdapterFrom(ContextElement element) =>
+        new(NewId(), element.Name, AdapterKind.Real, element.Id)
         {
-            Technology = Tidy(technology),
+            Technology = Tidy(element.Technology),
             Description = Tidy(element.Description),
         };
-    }
 
     private string NewId()
     {

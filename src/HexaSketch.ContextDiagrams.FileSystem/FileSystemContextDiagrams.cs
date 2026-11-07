@@ -73,7 +73,7 @@ internal static class ContextSketchJson
             };
             if (direction is null) problems.Add($"Relationship '{r.Id}' has an unknown direction '{r.Direction}'.");
             else if (r.Id is null || r.From is null || r.To is null) problems.Add("A relationship is missing its id, from or to.");
-            else relationships.Add(new ContextRelationship(r.Id, r.From, r.To, r.Label ?? "", r.Technology, direction.Value));
+            else relationships.Add(new ContextRelationship(r.Id, r.From, r.To, r.Label ?? "", direction.Value));
         }
 
         if (problems.Count > 0) throw new UnreadableException(problems);
@@ -90,5 +90,5 @@ internal static class ContextSketchJson
         string? Id, string? Type, string? Name, string? Description, string? Technology, double? X, double? Y, bool Pinned);
 
     private sealed record RelationshipDto(
-        string? Id, string? From, string? To, string? Label, string? Technology, string? Direction);
+        string? Id, string? From, string? To, string? Label, string? Direction);
 }

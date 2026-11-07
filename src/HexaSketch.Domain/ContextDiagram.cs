@@ -19,10 +19,9 @@ public sealed record ContextRelationship(
     string From,
     string To,
     string Label,
-    string? Technology,
     Direction Direction);
 
-/// <summary>A C4 system context diagram, as drawn in Context Sketch. Read-only once imported.</summary>
+/// <summary>A system context diagram, as drawn in Context Sketch. Read-only once imported.</summary>
 public sealed record ContextDiagram(
     string Title,
     IReadOnlyList<ContextElement> Elements,
