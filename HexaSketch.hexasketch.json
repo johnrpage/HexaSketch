@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "title": "HexaSketch - Context Diagram",
+  "contextDiagram": {
+    "schemaVersion": 1,
+    "title": "HexaSketch - Context Diagram",
+    "elements": [
+      {
+        "id": "b7c10a01",
+        "type": "system",
+        "name": "HexaSketch",
+        "description": "Sketch a ports-and-adapters diagram from a context diagram, then export the diagram and a solution plan",
+        "technology": "C# .NET Desktop App",
+        "x": 0,
+        "y": 0,
+        "pinned": false
+      },
+      {
+        "id": "b7c10a02",
+        "type": "primaryActor",
+        "name": "Developer",
+        "description": "Imports a context diagram, sketches ports and adapters, exports diagram and plan",
+        "technology": "User",
+        "x": -345,
+        "y": 0,
+        "pinned": false
+      },
+      {
+        "id": "b7c10a03",
+        "type": "storage",
+        "name": "Context Diagrams",
+        "description": "Context diagrams exported from Context Sketch; the starting point for a sketch",
+        "technology": "File System (.contextsketch.json)",
+        "x": 432,
+        "y": -182,
+        "pinned": true
+      },
+      {
+        "id": "b7c10a04",
+        "type": "storage",
+        "name": "Sketches",
+        "description": "Saved ports-and-adapters sketches",
+        "technology": "File System (JSON)",
+        "x": 474,
+        "y": 17,
+        "pinned": true
+      },
+      {
+        "id": "b7c10a05",
+        "type": "storage",
+        "name": "Exports",
+        "description": "Exported diagram and solution plan",
+        "technology": "File System (SVG / Markdown)",
+        "x": 441,
+        "y": 217,
+        "pinned": true
+      }
+    ],
+    "relationships": [
+      {
+        "id": "b7c10b01",
+        "from": "b7c10a02",
+        "to": "b7c10a01",
+        "label": "Sketches and exports",
+        "technology": "WPF",
+        "direction": "twoWay"
+      },
+      {
+        "id": "b7c10b02",
+        "from": "b7c10a03",
+        "to": "b7c10a01",
+        "label": "Imports context diagram",
+        "technology": "JSON",
+        "direction": "oneWay"
+      },
+      {
+        "id": "b7c10b03",
+        "from": "b7c10a01",
+        "to": "b7c10a04",
+        "label": "Saves and loads sketches",
+        "technology": "JSON",
+        "direction": "twoWay"
+      },
+      {
+        "id": "b7c10b04",
+        "from": "b7c10a01",
+        "to": "b7c10a05",
+        "label": "Writes diagram and plan",
+        "technology": "SVG / Markdown",
+        "direction": "oneWay"
+      }
+    ]
+  },
+  "ports": [
+    {
+      "id": "0bb6cee7",
+      "name": "User",
+      "side": "driving",
+      "isUser": true,
+      "adapters": [
+        {
+          "id": "7ee69f8f",
+          "name": "Developer",
+          "technology": "WPF",
+          "description": "Imports a context diagram, sketches ports and adapters, exports diagram and plan",
+          "kind": "real",
+          "source": "b7c10a02"
+        }
+      ]
+    },
+    {
+      "id": "33b7144a",
+      "name": "Context Diagrams",
+      "side": "driven",
+      "adapters": [
+        {
+          "id": "06dd3de6",
+          "name": "Context Diagrams",
+          "technology": "File System (.contextsketch.json)",
+          "description": "Context diagrams exported from Context Sketch; the starting point for a sketch",
+          "kind": "real",
+          "source": "b7c10a03"
+        },
+        {
+          "id": "1572b74e",
+          "name": "Fake",
+          "kind": "fake"
+        }
+      ]
+    },
+    {
+      "id": "2f96d9cb",
+      "name": "Sketches",
+      "side": "driven",
+      "adapters": [
+        {
+          "id": "7a6c8b1e",
+          "name": "Sketches",
+          "technology": "File System (JSON)",
+          "description": "Saved ports-and-adapters sketches",
+          "kind": "real",
+          "source": "b7c10a04"
+        },
+        {
+          "id": "237fe921",
+          "name": "Fake",
+          "kind": "fake"
+        }
+      ]
+    },
+    {
+      "id": "5d80fbe1",
+      "name": "Exports",
+      "side": "driven",
+      "adapters": [
+        {
+          "id": "190b6597",
+          "name": "Exports",
+          "technology": "File System (SVG / Markdown)",
+          "description": "Exported diagram and solution plan",
+          "kind": "real",
+          "source": "b7c10a05"
+        },
+        {
+          "id": "751a2b1e",
+          "name": "Fake",
+          "kind": "fake"
+        }
+      ]
+    }
+  ]
+}
