@@ -37,14 +37,19 @@ A file named on the command line is opened: a `.contextsketch.json` starts a ske
 - **Sketches** save as `.hexasketch.json`, with a copy of the CD embedded so the file stands alone. Each CD-sourced adapter keeps the CD element's id (`source`).
 - **Export diagram** writes an SVG cropped to the content. **Export plan** writes one Markdown file. Both warn (but allow) when CD items aren't placed; the plan lists them under "Not placed".
 
-## The plan's opinions (hard-coded in v1)
+## The plan's opinions (hard-coded)
 
-- `<System>.Domain` (no references) ← `<System>.Application` (all port interfaces) ← one project per adapter.
-- Projects: `<System>.<Port>.<Adapter>`, except User port adapters, which are `<System>.<Adapter>`.
-- Interfaces take the plain port name, **no `I` prefix** (`Storage`); the User port is `UserTasks` and `UserQueries`. Implementations carry the meaningful extra: `FileSystemStorage`, `FakeTracker`, never `Impl`.
-- **Every port gets a fake**: if none is drawn, the plan adds one (`<Port>.Fake` for driven ports, a `Specs` xUnit project for driving ports). Fakes on driving ports are xUnit spec projects referencing every driven fake.
-- Names are free text; code names are derived (PascalCase, two-letter acronyms kept: `WPF UI` → `WpfUI`). Clashes or unusable names block the plan export.
-- Stubs only, no composition root, `net10.0`.
+- Folders by role, mirrored as solution folders; no `src/` or `tests/`:
+  - `<System>/`: `<System>.Domain` (no references) ← `<System>.UseCases` (all port interfaces).
+  - `Adapters/`: one `<System>.<Port>` project per port (driven, or driving other than User), holding all its Real and Simulated adapters.
+  - `Checks/`: `<System>.Fakes` (every driven fake, a folder per port) and `<System>.Specs` (every driving port's fake: xUnit, AwesomeAssertions, template packages kept).
+  - Top level: the User port's runnable (non-Fake) adapter is `<System>.App`; if there are several, each is `<System>.<Adapter>`.
+- Namespaces: Domain and UseCases share the plain `<System>` namespace, so the port interfaces sit there. Adapters share `<System>.Adapters`; fakes share `<System>.Fakes`; specs `<System>.Specs`; the app its project name. Folders don't change namespaces; `RootNamespace` is set in every project.
+- Interfaces take the plain port name, **no `I` prefix** (`Storage`), one file each: the User port's `UserTasks` and `UserQueries` at UseCases' top level, the rest in `Ports/`.
+- Implementations carry the meaningful extra, never `Impl`. The class prefix is the adapter's name (`AzureDevOpsTracker`); when that only repeats the port's name (the default when imported from a CD), the technology without its brackets (`File System (JSON)` → `FileSystemSketches`); failing that, the kind (`FakeTracker`).
+- **Every port gets a fake**: if none is drawn, the plan adds one (`Fake` for driven ports, `Specs` for driving ports).
+- Names are free text; code names are derived (PascalCase, two-letter acronyms kept: `WPF UI` → `WpfUI`). Clashes or unusable names block the plan export, including ports named like a project or namespace (`Domain`, `UseCases`, `Application`, `App`, `Adapters`, `Fakes`, `Specs`, the system, or a runnable User adapter).
+- Stubs only, no composition root, `net10.0`. A root `.editorconfig` says interfaces need no `I` prefix; Domain keeps its `Class1.cs` to show the namespace choice.
 
 ## Deferred
 
