@@ -2,7 +2,7 @@
 
 A small Windows desktop tool (WPF, .NET) that turns a context diagram from [Context Sketch](https://github.com/johnrpage/context-tool) into a ports-and-adapters sketch. It exports the sketch as an SVG diagram, plus a Markdown solution plan a coding agent can build stubs from.
 
-> **Superseded by [Motif Sketch](https://github.com/johnrpage/Motif.Sketch).** Motif Sketch combines this tool and Context Sketch into one browser app. This repo is kept as reference material, and its diagram, sketching behaviour and plan opinions carry over to Motif Sketch, with the changes listed in Motif Sketch's SPEC.md.
+> **Archived: superseded by [Motif Sketch](https://github.com/motif-dotnet/Motif.Sketch)** ([try it](https://motif-dotnet.github.io/Motif.Sketch/)), part of the [Motif.NET](https://github.com/motif-dotnet) suite. Motif Sketch combines this tool and Context Sketch into one browser app. This repo is kept as reference material, and its diagram, sketching behaviour and plan opinions carry over to Motif Sketch, with the changes listed in Motif Sketch's SPEC.md.
 
 ## Running it
 
